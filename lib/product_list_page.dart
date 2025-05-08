@@ -22,12 +22,17 @@ class ProductListPage extends StatelessWidget {
     ),
   ];
 
+  // Define custom colors from the palette
+  final Color appBarColor = Color(0xFFC8B3FF); // Lavender
+  final Color cardColor = Color(0xFFF7D2FF); // Light Pink
+  final Color tileTextColor = Color(0xFF000000); // Black text
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Product List'),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: appBarColor,
       ),
       body: ListView.builder(
         itemCount: products.length,
@@ -36,15 +41,27 @@ class ProductListPage extends StatelessWidget {
           return GestureDetector(
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => ProductDetail(product: product)), // ✅ fixed name
+              MaterialPageRoute(builder: (_) => ProductDetail(product: product)),
             ),
             child: Card(
+              color: cardColor,
               margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: ListTile(
-                leading: Image.network(product.image, width: 60, height: 60, fit: BoxFit.cover),
-                title: Text(product.name),
-                subtitle: Text('₱${product.price.toStringAsFixed(2)}'),
-                trailing: Icon(Icons.arrow_forward_ios),
+                leading: Image.network(
+                  product.image,
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.cover,
+                ),
+                title: Text(
+                  product.name,
+                  style: TextStyle(color: tileTextColor),
+                ),
+                subtitle: Text(
+                  '₱${product.price.toStringAsFixed(2)}',
+                  style: TextStyle(color: tileTextColor),
+                ),
+                trailing: Icon(Icons.arrow_forward_ios, color: tileTextColor),
               ),
             ),
           );

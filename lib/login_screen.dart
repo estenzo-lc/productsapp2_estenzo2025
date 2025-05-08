@@ -25,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.purple[50],
+      backgroundColor: Color(0xFFF3E8FF), // Pastel lavender background
       body: Center(
         child: SingleChildScrollView(
           child: Container(
@@ -45,14 +45,14 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.lock_outline, size: 64, color: Colors.purple),
+                Icon(Icons.lock_outline, size: 64, color: Color(0xFFA17AFF)),
                 SizedBox(height: 16),
                 Text(
                   'Welcome Back',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.purple[700],
+                    color: Color(0xFFA17AFF),
                   ),
                 ),
                 SizedBox(height: 16),
@@ -84,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: ElevatedButton(
                     onPressed: _login,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple[400],
+                      backgroundColor: Color(0xFFC8B3FF), // Light purple
                       padding: EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

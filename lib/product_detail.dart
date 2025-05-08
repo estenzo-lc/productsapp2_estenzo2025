@@ -1,62 +1,133 @@
-// product_detail.dart
 import 'package:flutter/material.dart';
 import 'product.dart';
 
-class ProductDetail extends StatelessWidget {
+class ProductDetail extends StatefulWidget {
   final Product product;
 
-  const ProductDetail({Key? key, required this.product}) : super(key: key);
+  ProductDetail({required this.product});
+
+  @override
+  _ProductDetailState createState() => _ProductDetailState();
+}
+
+class _ProductDetailState extends State<ProductDetail> {
+  String? selectedSize;
+
+  void _addToCart(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${widget.product.name} added to cart!')),
+    );
+  }
+
+  void _buyNow(BuildContext context) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Buying ${widget.product.name}!')));
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(product.name),
-        backgroundColor: Colors.deepPurple,
+        title: Text(widget.product.name),
+        backgroundColor: Color(0xFFC8B3FF), // Light Purple
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Image.network(product.image, height: 200, fit: BoxFit.cover),
-            SizedBox(height: 16),
-            Text(product.name, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            Text("₱${product.price.toStringAsFixed(2)}", style: TextStyle(fontSize: 20, color: Colors.deepPurple)),
-            SizedBox(height: 10),
-            Text(product.description),
-            SizedBox(height: 10),
-            Text('Category: ${product.category}'),
-            if (product.sizes.isNotEmpty)
-              Text('Available Sizes: ${product.sizes.join(', ')}'),
-            SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    // Add to cart action
-                  },
-                  icon: Icon(Icons.add_shopping_cart),
-                  label: Text("Add to Cart"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurple,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.network(
+                    widget.product.image,
+                    height: 250,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
                   ),
                 ),
-                SizedBox(width: 16),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    // Buy now action
-                  },
-                  icon: Icon(Icons.shopping_bag),
-                  label: Text("Buy Now"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pinkAccent,
-                  ),
+              ),
+              SizedBox(height: 16),
+              Text(
+                widget.product.name,
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
+              Text(
+                "₱${widget.product.price.toStringAsFixed(2)}",
+                style: TextStyle(fontSize: 20, color: Colors.grey[700]),
+              ),
+              SizedBox(height: 16),
+              Text(
+                "Description",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
+              Text(widget.product.description, style: TextStyle(fontSize: 16)),
+              if (widget.product.sizes.isNotEmpty) ...[
+                SizedBox(height: 16),
+                Text(
+                  "Available Sizes",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children:
+                      widget.product.sizes.map((size) {
+                        bool isSelected = selectedSize == size;
+                        return ChoiceChip(
+                          label: Text(size),
+                          selected: isSelected,
+                          selectedColor: Color(
+                            0xFFC0D7FF,
+                          ), // Light Blue for selected
+                          onSelected: (selected) {
+                            setState(() {
+                              selectedSize = selected ? size : null;
+                            });
+                          },
+                        );
+                      }).toList(),
                 ),
               ],
-            ),
-          ],
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => _addToCart(context),
+                      child: Text(
+                        'Add to Cart',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF7D2FFF), // Vibrant Purple
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 16), // Space between buttons
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => _buyNow(context),
+                      child: Text(
+                        'Buy Now',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFFBEC1FF), // Light Blue
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
