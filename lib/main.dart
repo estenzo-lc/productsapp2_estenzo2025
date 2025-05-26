@@ -1,59 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
-import 'app_state.dart';
-import 'login_screen.dart';
+import 'package:provider/provider.dart'; // For state management
+import '/models/background_model.dart'; // Custom background color model
+import '/models/language_model.dart';   // Custom language toggle model
+import 'log_in.dart';
+import 'user_preference.dart';
 import 'home_screen.dart';
-import 'add_product.dart';
-import 'category_screen.dart';     // Category screen
-import 'product_data.dart';       // Product list
-import 'cart_provider.dart';      // Cart state
-import 'cart_screen.dart';        // Cart screen
-import 'profile_screen.dart';     // ✅ Profile screen
+import 'detail_screen.dart';
 
 void main() {
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AppState()),
-        ChangeNotifierProvider(create: (_) => CartProvider()),
-      ],
-      child: const FashionShopApp(),
-    ),
-  );
+  runApp(const MyApp()); // Entry point of the Flutter app
 }
 
-class FashionShopApp extends StatelessWidget {
-  const FashionShopApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final appState = Provider.of<AppState>(context);
-
-    return MaterialApp(
-      title: 'Fashion Shop',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primaryColor: appState.themeColor,
-        appBarTheme: AppBarTheme(
-          backgroundColor: appState.themeColor,
+    return MultiProvider(
+      providers: [
+        // Backgroundmodel and LanguageModel are provided at the root level
+        // so they can be accessed anywhere in the app via Provider.of<>()
+        ChangeNotifierProvider(create: (_) => Backgroundmodel()),
+        ChangeNotifierProvider(create: (_) => LanguageModel()),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false, // Removes debug banner
+        title: 'Angels Fashion App', // App title
+        theme: ThemeData(
+          primarySwatch: Colors.pink, // App primary theme color
+          visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(backgroundColor: appState.themeColor),
-        ),
-        bottomNavigationBarTheme: BottomNavigationBarThemeData(
-          selectedItemColor: appState.themeColor,
-        ),
+        initialRoute: '/login', // Start the app at the login screen
+        routes: {
+          // Define navigation routes for the app
+          '/login': (context) => LoginScreen(),
+          '/home': (context) => HomeScreen(),
+          '/preferences': (context) => UserPreferencePage(),
+          '/detail': (context) => DetailScreen(),
+        },
       ),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => LoginScreen(),
-        '/home': (context) => HomeScreen(),
-        '/add': (context) => AddProduct(),
-        '/categories': (context) => CategoriesScreen(products: products),
-        '/cart': (context) => CartScreen(),
-        '/profile': (context) => ProfileScreen(), // ✅ Added Profile screen route
-      },
     );
   }
 }
