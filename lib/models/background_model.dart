@@ -5,20 +5,25 @@ class Backgroundmodel extends ChangeNotifier {
 
   // Theme colors based on your custom pastel palette
   Color _scaffoldBgColor = const Color(0xFFF7D2FF); // Light pink
-  Color _appBarColor = const Color(0xFFBEC1FF);     // Lavender blue
+  Color _appBarColor = const Color(0xFFBB86FC); // Light purple (Updated)
   Color _drawerHeaderColor = const Color(0xFFC8B3FF); // Soft purple
-  Color _buttonColor = const Color(0xFFC0D7FF);     // Light blue
-  Color _accentColor = const Color(0xFFC3F9FF);     // Light cyan
-  Color _textColor = const Color(0xFF6A5ACD);       // Keep readable contrast
+  Color _buttonColor = const Color(0xFFC0D7FF); // Light blue
+  Color _accentColor = const Color(0xFFC3F9FF); // Light cyan
+  Color _textColor = const Color(0xFF6A5ACD); // Keep readable contrast
   Color _secondBtn = const Color(0xFFBEC1FF);
   Color _buyBtn = const Color(0xFFF7D2FF);
   Color _cartBtn = const Color(0xFFC8B3FF);
-  Color _ratingColor = const Color.fromARGB(100, 200, 179, 255); // Transparent soft purple
+  Color _ratingColor = const Color.fromARGB(
+    100,
+    200,
+    179,
+    255,
+  ); // Transparent soft purple
 
   void applyPastelTheme() {
     _currentTheme = "pastel";
     _scaffoldBgColor = const Color(0xFFF7D2FF);
-    _appBarColor = const Color(0xFFBEC1FF);
+    _appBarColor = const Color(0xFFBB86FC); // Light purple applied here
     _drawerHeaderColor = const Color(0xFFC8B3FF);
     _buttonColor = const Color(0xFFC0D7FF);
     _accentColor = const Color(0xFFC3F9FF);
@@ -33,7 +38,7 @@ class Backgroundmodel extends ChangeNotifier {
   void reset() {
     _currentTheme = "default";
     _scaffoldBgColor = const Color(0xFFF7D2FF);
-    _appBarColor = const Color(0xFFBEC1FF);
+    _appBarColor = const Color(0xFFBB86FC); // Light purple applied here
     _drawerHeaderColor = const Color(0xFFC8B3FF);
     _buttonColor = const Color(0xFFC0D7FF);
     _accentColor = const Color(0xFFC3F9FF);

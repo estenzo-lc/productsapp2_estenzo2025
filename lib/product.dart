@@ -25,9 +25,9 @@ class Product {
       id: json['id'], // Parse ID
       name: json['name'], // Parse name
       description: json['description'], // Parse description
-      price: double.parse(json['price'].toString()), 
-      // Ensure price is a double (may come as string or number)
+      price: double.parse(json['price'].toString()),
 
+      // Ensure price is a double (may come as string or number)
       categoryId: json['category_id'], // Parse category ID
       userId: json['user_id'], // Parse user ID
       imagePath: json['image_path'], // Parse optional image path

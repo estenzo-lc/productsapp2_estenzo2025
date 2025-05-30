@@ -6,83 +6,123 @@ class ProductCardWidget extends StatelessWidget {
   final Product product;
   final double width;
 
-  const ProductCardWidget(
-      {super.key, required this.product, required this.width});
+  const ProductCardWidget({
+    super.key,
+    required this.product,
+    required this.width,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        // Navigate to DetailScreen when tapped
-        Navigator.pushNamed(context, '/detail', arguments: product);
-      },
-      child: Container(
-        width: width,
-        margin: const EdgeInsets.only(right: 12),
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Colors.purple[100],
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 5,
-              offset: const Offset(2, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Product Image
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
+    // Your pastel color palette
+    const Color cardBackground = Color(0xFFC3F9FF); // Light cyan
+    const Color priceBackground = Color(0xFFF7D2FF); // Light pink
+    const Color borderColor = Color(0xFFC8B3FF); // Soft purple
+    const Color shadowColor = Color.fromARGB(
+      100,
+      200,
+      179,
+      255,
+    ); // Transparent purple
+
+    return Container(
+      width: width,
+      margin: const EdgeInsets.only(right: 12, bottom: 10),
+      decoration: BoxDecoration(
+        color: cardBackground,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor.withOpacity(0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: shadowColor,
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            child: SizedBox(
+              height: width * 0.6,
+              width: double.infinity,
               child:
                   (product.imagePath != null && product.imagePath!.isNotEmpty)
                       ? Image.network(
-                          // Build the full image URL from AppConfig.baseUrl
-                          '${AppConfig.baseUrl}/storage/${product.imagePath}',
-                          height: width * 0.55, // Reduce image height
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Image.asset(
-                              'assets/placeholder.png',
-                              height: width * 0.55,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                            );
-                          },
-                        )
+                        '${AppConfig.baseUrl}/storage/${product.imagePath}',
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            'assets/placeholder.png',
+                            fit: BoxFit.cover,
+                          );
+                        },
+                      )
                       : Image.asset(
-                          'assets/placeholder.png',
-                          height: width * 0.55,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
+                        'assets/placeholder.png',
+                        fit: BoxFit.cover,
+                      ),
             ),
-            const SizedBox(height: 8),
-
-            // Product Name
-            Text(
-              product.name,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  product.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.black,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  product.description,
+                  style: const TextStyle(fontSize: 13, color: Colors.black87),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-            const SizedBox(height: 4),
-
-            // Product Price
-            Text(
-              "\$${product.price}",
-              style: const TextStyle(
-                color: Colors.pinkAccent,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 14, right: 14, bottom: 12),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: priceBackground,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: shadowColor,
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Text(
+                  '₱0.00', // Placeholder, replaced dynamically below
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

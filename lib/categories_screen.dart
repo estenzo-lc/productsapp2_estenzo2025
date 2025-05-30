@@ -6,73 +6,75 @@ import 'product_card.dart';
 import '/models/background_model.dart';
 import '/models/language_model.dart';
 import 'package:provider/provider.dart';
-import 'config.dart';
 
 class CategoriesScreen extends StatefulWidget {
   final int initialCategoryId;
   final String initialCategoryName;
-  const CategoriesScreen(
-      {super.key,
-      required this.initialCategoryId,
-      required this.initialCategoryName});
+  const CategoriesScreen({
+    super.key,
+    required this.initialCategoryId,
+    required this.initialCategoryName,
+  });
 
   @override
   State<CategoriesScreen> createState() => _CategoriesScreenState();
 }
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
-  late int selectedCategoryId; // Holds the currently selected category ID
-  late String selectedCategoryName; // Holds the name of the selected category
-  late Future<List<Map<String, dynamic>>> _categoriesFuture; // Future to load categories
-  int _currentPage = 1; // Tracks the current page number for pagination
-  bool _isLoadingMore = false; // Prevents multiple fetches at the same time
-  bool _hasMore = true; // Indicates if there are more products to fetch
-  List<Product> _products = []; // List of loaded products
-  final ScrollController _scrollController = ScrollController(); // Controls scroll for infinite loading
+  late int selectedCategoryId;
+  late String selectedCategoryName;
+  late Future<List<Map<String, dynamic>>> _categoriesFuture;
+  int _currentPage = 1;
+  bool _isLoadingMore = false;
+  bool _hasMore = true;
+  List<Product> _products = [];
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     selectedCategoryId = widget.initialCategoryId;
     selectedCategoryName = widget.initialCategoryName;
-    _categoriesFuture = CategoryService.getCategories(); // Fetch categories when the screen loads
-    _fetchInitialProducts(); // Fetch initial products for the selected category
-    _scrollController.addListener(_onScroll); // Listen for scroll to implement infinite scrolling
+    _categoriesFuture = CategoryService.getCategories();
+    _fetchInitialProducts();
+    _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
-    _scrollController.dispose(); // Dispose scroll controller to avoid memory leaks
+    _scrollController.dispose();
     super.dispose();
   }
 
   void _fetchInitialProducts() async {
     setState(() {
-      _currentPage = 1; // Reset to first page
-      _products = []; // Clear previous products
+      _currentPage = 1;
+      _products = [];
       _hasMore = true;
       _isLoadingMore = false;
     });
-    await _fetchProductsPage(); // Fetch the first page of products
+    await _fetchProductsPage();
   }
 
   Future<void> _fetchProductsPage() async {
-    if (!_hasMore || _isLoadingMore) return; // Exit if already loading or no more data
+    if (!_hasMore || _isLoadingMore) return;
     setState(() {
-      _isLoadingMore = true; // Indicate loading has started
+      _isLoadingMore = true;
     });
     try {
       final result = await ProductService.fetchProductsByCategoryPaginated(
-          selectedCategoryId, _currentPage); // Fetch paginated products
+        selectedCategoryId,
+        _currentPage,
+      );
       setState(() {
-        _products.addAll(result['products']); // Add fetched products to the list
-        _hasMore = result['hasMore']; // Update if more products are available
+        _products.addAll(result['products']);
+        _hasMore = result['hasMore'];
         _isLoadingMore = false;
-        _currentPage++; // Move to next page for future fetches
+        _currentPage++;
       });
     } catch (e) {
       setState(() {
-        _isLoadingMore = false; // Stop loading in case of error
+        _isLoadingMore = false;
       });
     }
   }
@@ -80,13 +82,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   void _onCategorySelected(int id, String name) {
     setState(() {
       selectedCategoryId = id;
-      selectedCategoryName = name; // Update the selected category
+      selectedCategoryName = name;
     });
-    _fetchInitialProducts(); // Refetch products based on new category
+    _fetchInitialProducts();
   }
 
   void _onScroll() {
-    // Check if the user scrolled near the bottom and load more products if available
     if (_scrollController.position.pixels >=
             _scrollController.position.maxScrollExtent - 200 &&
         !_isLoadingMore &&
@@ -95,129 +96,109 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     }
   }
 
-  // Builds a custom animated button for category selection
-  Widget _buildCategoryButton(String text, bool selected,
-      {VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 22),
-        margin: const EdgeInsets.symmetric(vertical: 2),
-        decoration: BoxDecoration(
-          color: selected ? Colors.pink[50] : Colors.grey[200],
-          borderRadius: BorderRadius.circular(24),
-          border:
-              selected ? Border.all(color: Colors.pinkAccent, width: 2) : null,
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                      color: Colors.pinkAccent.withOpacity(0.10),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2))
-                ]
-              : [],
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.category,
-                color: selected ? Colors.pinkAccent : Colors.grey[600],
-                size: 20),
-            const SizedBox(width: 8),
-            Text(
-              text,
-              style: TextStyle(
-                color: selected ? Colors.pinkAccent : Colors.black87,
-                fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-                fontSize: 16,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final backgroundModel = Provider.of<Backgroundmodel>(context); // Used to get background color settings
-    final languageModel = Provider.of<LanguageModel>(context); // Used to toggle between languages
-    final isFilipino = languageModel.isFilipino(); // Check if current language is Filipino
+    final backgroundModel = Provider.of<Backgroundmodel>(context);
+    final languageModel = Provider.of<LanguageModel>(context);
+    final isFilipino = languageModel.isFilipino();
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-            isFilipino ? 'Mga Produkto ng Kategorya' : 'Category Products'), // AppBar title depends on language
+          isFilipino ? 'Mga Produkto ng Kategorya' : 'Category Products',
+        ),
         backgroundColor: backgroundModel.appBar,
       ),
       backgroundColor: backgroundModel.background,
       body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _categoriesFuture, // Future to fetch categories
+        future: _categoriesFuture,
         builder: (context, catSnapshot) {
           if (catSnapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator()); // Show loader while waiting
+            return const Center(child: CircularProgressIndicator());
           } else if (catSnapshot.hasError) {
-            return Center(child: Text('Error: \\${catSnapshot.error}')); // Show error if any
+            return Center(child: Text('Error: ${catSnapshot.error}'));
           } else if (!catSnapshot.hasData || catSnapshot.data!.isEmpty) {
-            return const Center(child: Text('No categories found.')); // Handle empty data
+            return const Center(child: Text('No categories found.'));
           }
+
           final categories = catSnapshot.data!;
+          final dropdownItems =
+              categories
+                  .map<DropdownMenuItem<int>>(
+                    (cat) => DropdownMenuItem<int>(
+                      value: cat['id'],
+                      child: Text(cat['name']),
+                    ),
+                  )
+                  .toList();
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(
-                height: 70,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  itemCount: categories.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(width: 10), // Space between buttons
-                  itemBuilder: (context, index) {
-                    final cat = categories[index];
-                    final bool isSelected = cat['id'] == selectedCategoryId;
-                    return _buildCategoryButton(
-                      cat['name'],
-                      isSelected,
-                      onTap: () => _onCategorySelected(cat['id'], cat['name']),
-                    );
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                child: DropdownButtonFormField<int>(
+                  value: selectedCategoryId,
+                  decoration: InputDecoration(
+                    labelText:
+                        isFilipino ? 'Pumili ng Kategorya' : 'Select Category',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                  items: dropdownItems,
+                  onChanged: (int? newValue) {
+                    if (newValue != null) {
+                      final selected = categories.firstWhere(
+                        (element) => element['id'] == newValue,
+                      );
+                      _onCategorySelected(selected['id'], selected['name']);
+                    }
                   },
                 ),
               ),
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  selectedCategoryName, // Display selected category name
+                  selectedCategoryName,
                   style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               Expanded(
                 child: GridView.builder(
-                  controller: _scrollController, // Attach scroll controller
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  controller: _scrollController,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2, // Two items per row
+                    crossAxisCount: 2,
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12,
-                    childAspectRatio: 0.85,
+                    childAspectRatio: 0.70,
                   ),
-                  itemCount: _products.length + (_isLoadingMore ? 1 : 0), // Add extra item for loader
+                  itemCount: _products.length + (_isLoadingMore ? 1 : 0),
                   itemBuilder: (context, index) {
                     if (index < _products.length) {
                       return ProductCardWidget(
-                        product: _products[index], // Show product item
+                        product: _products[index],
                         width: (MediaQuery.of(context).size.width - 64) / 2,
                       );
                     } else {
                       return const Center(
-                          child: Padding(
-                        padding: EdgeInsets.all(16),
-                        child: CircularProgressIndicator(), // Show loader while loading more
-                      ));
+                        child: Padding(
+                          padding: EdgeInsets.all(16),
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
                     }
                   },
                 ),

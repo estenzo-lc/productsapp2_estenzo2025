@@ -4,13 +4,12 @@ import 'product_card.dart';
 import 'product.dart';
 import 'create_new_product.dart';
 import 'user_preference.dart';
-import 'editproduct_screen.dart'; // Import for EditProductScreen
-import 'myproduct_screen.dart'; // Import for MyProductsScreen
+import 'myproduct_screen.dart';
 import '/models/background_model.dart';
 import '/models/language_model.dart';
 import 'product_service.dart';
-import 'category_service.dart'; // Import for CategoryService
-import 'categories_screen.dart'; // Import for CategoriesScreen
+import 'category_service.dart';
+import 'categories_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'config.dart';
 import 'package:http/http.dart' as http;
@@ -25,32 +24,34 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late Future<List<Product>> _productsFuture;
   int? userId;
+  String? userName;
+  String? userEmail;
 
   @override
   void initState() {
     super.initState();
     _productsFuture = ProductService.fetchProducts();
-    _loadUserId();
+    _loadUserInfo();
   }
 
-  void _loadUserId() async {
+  void _loadUserInfo() async {
     final prefs = await SharedPreferences.getInstance();
     final id = prefs.getInt('user_id');
-    if (id != null && id != userId) {
-      setState(() {
-        userId = id;
-      });
-    }
+    final name = prefs.getString('user_name');
+    final email = prefs.getString('user_email');
+    setState(() {
+      userId = id;
+      userName = name;
+      userEmail = email;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final backgroundModel = Provider.of<Backgroundmodel>(context);
     final languageModel = Provider.of<LanguageModel>(context);
-
     final themeColor = backgroundModel.accent;
     final bool isFilipino = languageModel.isFilipino();
-
     final String createProductText =
         isFilipino ? "Lumikha ng Produkto" : "Create Product";
     final String userPreferencesText =
@@ -61,13 +62,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: backgroundModel.background,
       appBar: AppBar(
-        title: const Text("Beauty Store"),
+        elevation: 0,
         backgroundColor: backgroundModel.appBar,
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
+        title: const Text(
+          "Angels Fashion App",
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
@@ -80,26 +79,47 @@ class _HomeScreenState extends State<HomeScreen> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            DrawerHeader(
+            UserAccountsDrawerHeader(
               decoration: BoxDecoration(color: backgroundModel.drawerHeader),
-              child: const Text("Menu",
-                  style: TextStyle(color: Colors.white, fontSize: 24)),
+              accountName: Text(
+                userName ?? 'User',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              accountEmail: Text(userEmail ?? ''),
+              currentAccountPicture: CircleAvatar(
+                backgroundColor: themeColor,
+                child: Text(
+                  (userName != null && userName!.isNotEmpty)
+                      ? userName![0].toUpperCase()
+                      : 'U',
+                  style: const TextStyle(fontSize: 32, color: Colors.white),
+                ),
+              ),
             ),
             _buildDrawerListTile(
-                context, createProductText, Icons.add_circle_outline, () {
-              // Corrected navigation to CreateNewProductScreen
-              Navigator.push(
+              context,
+              createProductText,
+              Icons.add_circle_outline,
+              () {
+                Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const CreateNewProduct()));
-            }),
-            _buildDrawerListTile(context, userPreferencesText, Icons.settings,
-                () {
-              Navigator.push(
+                    builder: (context) => const CreateNewProduct(),
+                  ),
+                );
+              },
+            ),
+            _buildDrawerListTile(
+              context,
+              userPreferencesText,
+              Icons.settings,
+              () {
+                Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => UserPreferencePage()));
-            }),
+                  MaterialPageRoute(builder: (context) => UserPreferencePage()),
+                );
+              },
+            ),
             _buildDrawerListTile(context, myProductsText, Icons.list, () {
               if (userId != null) {
                 Navigator.push(
@@ -110,18 +130,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               }
             }),
-            // Logout button
             _buildDrawerListTile(context, 'Logout', Icons.logout, () async {
               final prefs = await SharedPreferences.getInstance();
-              // Call API logout endpoint
               final url = Uri.parse('${AppConfig.baseUrl}/api/auth/logout');
               try {
                 await http.post(url, headers: {'Accept': 'application/json'});
               } catch (_) {}
               await prefs.clear();
               if (!mounted) return;
-              Navigator.of(context)
-                  .pushNamedAndRemoveUntil('/login', (route) => false);
+              Navigator.of(
+                context,
+              ).pushNamedAndRemoveUntil('/login', (route) => false);
             }),
           ],
         ),
@@ -149,10 +168,6 @@ class _HomeScreenState extends State<HomeScreen> {
           products.shuffle();
           final featured = products.take(3).toList();
 
-          double screenWidth = MediaQuery.of(context).size.width;
-          double itemWidth = screenWidth * 0.4;
-
-          // Fetch categories and show them in the horizontal list
           return FutureBuilder<List<Map<String, dynamic>>>(
             future: CategoryService.getCategories(),
             builder: (context, catSnapshot) {
@@ -165,142 +180,31 @@ class _HomeScreenState extends State<HomeScreen> {
               }
               final categories = catSnapshot.data!;
 
-              return SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      height: 48,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: categories.length,
-                        separatorBuilder: (context, index) =>
-                            const SizedBox(width: 10),
-                        itemBuilder: (context, index) {
-                          final cat = categories[index];
-                          return _buildCategoryButton(
-                            cat['name'],
-                            backgroundModel.button,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => CategoriesScreen(
-                                    initialCategoryId: cat['id'],
-                                    initialCategoryName: cat['name'],
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    _buildSectionTitle('Best Sellers', () {}),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      height: 240, // Increased from 220 to prevent overflow
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: bestSellers.length,
-                        itemBuilder: (ctx, index) {
-                          return _buildProductCard(
-                              bestSellers[index], itemWidth, context);
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    _buildSectionTitle('Trending Now', () {}),
-                    const SizedBox(height: 10),
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        final gridItemWidth = (constraints.maxWidth - 10) / 2;
-                        final gridItemHeight =
-                            gridItemWidth / 0.85; // Increase height (was 1.2)
-                        return SizedBox(
-                          height: gridItemHeight * 2 + 10, // 2 rows + spacing
-                          child: GridView.builder(
-                            padding: EdgeInsets.zero,
-                            physics: const NeverScrollableScrollPhysics(),
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: 10,
-                              crossAxisSpacing: 10,
-                              childAspectRatio: 0.85, // Make cards taller
-                            ),
-                            itemCount:
-                                trending.length > 4 ? 4 : trending.length,
-                            itemBuilder: (ctx, index) {
-                              return _buildProductCard(
-                                  trending[index], gridItemWidth, context);
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    _buildSectionTitle('New Arrivals', () {}),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      height: 240, // Increased from 220 to prevent overflow
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: newArrivals.length,
-                        itemBuilder: (ctx, index) {
-                          return _buildProductCard(
-                              newArrivals[index], itemWidth, context);
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    _buildSectionTitle('Staff Picks', () {}),
-                    const SizedBox(height: 10),
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        final gridItemWidth = (constraints.maxWidth - 10) / 2;
-                        final gridItemHeight =
-                            gridItemWidth / 0.85; // Increase height (was 1.2)
-                        return SizedBox(
-                          height: gridItemHeight * 2 + 10, // 2 rows + spacing
-                          child: GridView.builder(
-                            padding: EdgeInsets.zero,
-                            physics: const NeverScrollableScrollPhysics(),
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: 10,
-                              crossAxisSpacing: 10,
-                              childAspectRatio: 0.85, // Make cards taller
-                            ),
-                            itemCount:
-                                staffPicks.length > 4 ? 4 : staffPicks.length,
-                            itemBuilder: (ctx, index) {
-                              return _buildProductCard(
-                                  staffPicks[index], gridItemWidth, context);
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    _buildSectionTitle('Featured', () {}),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      height: 240, // Increased from 220 to prevent overflow
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: featured.length,
-                        itemBuilder: (ctx, index) {
-                          return _buildProductCard(
-                              featured[index], itemWidth, context);
-                        },
-                      ),
-                    ),
-                  ],
+              return ListView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
                 ),
+                children: [
+                  _buildCategoryChips(categories, backgroundModel, themeColor),
+                  const SizedBox(height: 18),
+                  _modernSection('Best Sellers', bestSellers, themeColor),
+                  _modernSection(
+                    'Trending Now',
+                    trending,
+                    themeColor,
+                    grid: true,
+                  ),
+                  _modernSection('New Arrivals', newArrivals, themeColor),
+                  _modernSection(
+                    'Staff Picks',
+                    staffPicks,
+                    themeColor,
+                    grid: true,
+                  ),
+                  _modernSection('Featured', featured, themeColor),
+                  const SizedBox(height: 32),
+                ],
               );
             },
           );
@@ -309,68 +213,195 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildProductCard(
-      Product product, double itemWidth, BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => EditProductScreen(product: product),
-        ),
+  Widget _buildCategoryChips(
+    List<Map<String, dynamic>> categories,
+    Backgroundmodel backgroundModel,
+    Color themeColor,
+  ) {
+    return SizedBox(
+      height: 48,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: categories.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 10),
+        itemBuilder: (context, index) {
+          final cat = categories[index];
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (context) => CategoriesScreen(
+                        initialCategoryId: cat['id'],
+                        initialCategoryName: cat['name'],
+                      ),
+                ),
+              );
+            },
+            child: Chip(
+              label: Text(cat['name'], style: TextStyle(color: themeColor)),
+              backgroundColor: themeColor.withOpacity(0.13),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+              side: BorderSide(color: themeColor.withOpacity(0.3)),
+            ),
+          );
+        },
       ),
-      child: ProductCardWidget(product: product, width: itemWidth),
     );
   }
 
-  Widget _buildCategoryButton(String text, Color color,
-      {VoidCallback? onTap, bool selected = false}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 22),
-        margin: const EdgeInsets.symmetric(vertical: 2),
-        decoration: BoxDecoration(
-          color: selected ? Colors.pink[50] : Colors.grey[200],
-          borderRadius: BorderRadius.circular(24),
-          border:
-              selected ? Border.all(color: Colors.pinkAccent, width: 2) : null,
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                      color: Colors.pinkAccent.withOpacity(0.10),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2))
-                ]
-              : [],
-        ),
-        child: Row(
+  Widget _modernSection(
+    String title,
+    List<Product> products,
+    Color themeColor, {
+    bool grid = false,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            Icon(Icons.category,
-                color: selected ? Colors.pinkAccent : Colors.grey[600],
-                size: 20),
-            const SizedBox(width: 8),
+            Container(
+              width: 6,
+              height: 24,
+              decoration: BoxDecoration(
+                color: themeColor,
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+            const SizedBox(width: 10),
             Text(
-              text,
-              style: TextStyle(
-                color: selected ? Colors.pinkAccent : Colors.black87,
-                fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-                fontSize: 16,
+              title,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        grid
+            ? _modernProductGrid(products, themeColor)
+            : _modernProductList(products, themeColor),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Widget _modernProductList(List<Product> products, Color themeColor) {
+    return SizedBox(
+      height: 250,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: products.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 18),
+        itemBuilder: (ctx, index) {
+          return _modernProductCard(products[index], 180, themeColor, context);
+        },
+      ),
+    );
+  }
+
+  Widget _modernProductGrid(List<Product> products, Color themeColor) {
+    // Use a fixed card width for grid items
+    const double gridCardWidth = 160;
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
+        childAspectRatio: 0.75,
+      ),
+      itemCount: products.length > 4 ? 4 : products.length,
+      itemBuilder: (ctx, index) {
+        return _modernProductCard(
+          products[index],
+          gridCardWidth, // Use fixed width
+          themeColor,
+          context,
+        );
+      },
+    );
+  }
+
+  Widget _modernProductCard(
+    Product product,
+    double itemWidth,
+    Color themeColor,
+    BuildContext context,
+  ) {
+    return GestureDetector(
+      onTap:
+          () => Navigator.pushNamed(
+            context,
+            '/product-details',
+            arguments: product,
+          ),
+      child: Container(
+        width: itemWidth,
+        margin: const EdgeInsets.only(bottom: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(22),
+          boxShadow: [
+            BoxShadow(
+              color: themeColor.withOpacity(0.10),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+          border: Border.all(color: themeColor.withOpacity(0.13)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(
+              height: itemWidth * 0.6, // Use proportional height for image area
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(22),
+                ),
+                child: ProductCardWidget(product: product, width: itemWidth),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    product.description,
+                    style: const TextStyle(fontSize: 13, color: Colors.black54),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '₱${product.price.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: themeColor,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title, VoidCallback onTap) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(title,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-      ],
     );
   }
 
@@ -380,10 +411,6 @@ class _HomeScreenState extends State<HomeScreen> {
     IconData icon,
     VoidCallback onTap,
   ) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      onTap: onTap,
-    );
+    return ListTile(leading: Icon(icon), title: Text(title), onTap: onTap);
   }
 }

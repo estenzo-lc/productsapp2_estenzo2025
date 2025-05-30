@@ -27,7 +27,10 @@ class CreateNewProductService {
     File? image,
   }) async {
     final url = Uri.parse('${AppConfig.baseUrl}/api/products'); // API endpoint
-    var request = http.MultipartRequest('POST', url); // Multipart request for sending file and data
+    var request = http.MultipartRequest(
+      'POST',
+      url,
+    ); // Multipart request for sending file and data
 
     // Add form fields to the request
     request.fields['name'] = name;
@@ -53,7 +56,8 @@ class CreateNewProductService {
 class _AddProductScreenState extends State<CreateNewProduct> {
   String? selectedCategory; // Stores selected category ID (as string)
   final TextEditingController productNameController = TextEditingController();
-  final TextEditingController productDescriptionController = TextEditingController();
+  final TextEditingController productDescriptionController =
+      TextEditingController();
   final TextEditingController priceController = TextEditingController();
 
   List<Map<String, dynamic>> categories = []; // List of category options
@@ -90,13 +94,23 @@ class _AddProductScreenState extends State<CreateNewProduct> {
 
   @override
   Widget build(BuildContext context) {
-    final isFilipino = Provider.of<LanguageModel>(context).isFilipino(); // Check current language setting
-    final backgroundModel = Provider.of<Backgroundmodel>(context); // Get theme colors
+    final isFilipino =
+        Provider.of<LanguageModel>(
+          context,
+        ).isFilipino(); // Check current language setting
+    final backgroundModel = Provider.of<Backgroundmodel>(
+      context,
+    ); // Get theme colors
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.white, // Light background color
       appBar: AppBar(
-        backgroundColor: backgroundModel.appBar,
+        backgroundColor: const Color.fromARGB(
+          255,
+          236,
+          168,
+          249,
+        ), // Light color for the AppBar
         title: Text(
           isFilipino ? "Magdagdag ng Bagong Produkto" : 'Add New Product',
         ),
@@ -112,24 +126,35 @@ class _AddProductScreenState extends State<CreateNewProduct> {
           children: [
             // Section: Product image upload
             Text(
-              isFilipino ? "Magdagdag ng mga larawan ng produkto" : "Add product images",
-              style: TextStyle(fontWeight: FontWeight.bold),
+              isFilipino
+                  ? "Magdagdag ng mga larawan ng produkto"
+                  : "Add product images",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
             ),
             SizedBox(height: 10),
             // Display selected image or an "add" icon
             GestureDetector(
               onTap: _pickImage,
-              child: _image == null
-                  ? Container(
-                      height: 80,
-                      width: 80,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(8),
+              child:
+                  _image == null
+                      ? Container(
+                        height: 80,
+                        width: 80,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(Icons.add, size: 40, color: Colors.grey),
+                      )
+                      : Image.file(
+                        _image!,
+                        height: 80,
+                        width: 80,
+                        fit: BoxFit.cover,
                       ),
-                      child: Icon(Icons.add, size: 40, color: Colors.grey),
-                    )
-                  : Image.file(_image!, height: 80, width: 80, fit: BoxFit.cover),
             ),
 
             SizedBox(height: 20),
@@ -137,7 +162,10 @@ class _AddProductScreenState extends State<CreateNewProduct> {
             // Section: Product details
             Text(
               isFilipino ? "Mga detalye ng produkto" : "Product details",
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
             ),
             SizedBox(height: 10),
 
@@ -145,23 +173,30 @@ class _AddProductScreenState extends State<CreateNewProduct> {
             isLoadingCategories
                 ? CircularProgressIndicator()
                 : DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
-                      labelText: isFilipino ? "Pumili ng kategorya ng produkto" : "Select product category",
-                      border: OutlineInputBorder(),
-                    ),
-                    value: selectedCategory,
-                    items: categories.map((category) {
-                      return DropdownMenuItem<String>(
-                        value: category['id'].toString(),
-                        child: Text(category['name']),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedCategory = value; // Save selected category
-                      });
-                    },
+                  decoration: InputDecoration(
+                    labelText:
+                        isFilipino
+                            ? "Pumili ng kategorya ng produkto"
+                            : "Select product category",
+                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(
+                      color: Colors.black,
+                    ), // Text color change
                   ),
+                  value: selectedCategory,
+                  items:
+                      categories.map((category) {
+                        return DropdownMenuItem<String>(
+                          value: category['id'].toString(),
+                          child: Text(category['name']),
+                        );
+                      }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedCategory = value; // Save selected category
+                    });
+                  },
+                ),
 
             SizedBox(height: 10),
 
@@ -171,6 +206,7 @@ class _AddProductScreenState extends State<CreateNewProduct> {
               decoration: InputDecoration(
                 labelText: isFilipino ? "Pangalan ng produkto" : "Product name",
                 border: OutlineInputBorder(),
+                labelStyle: TextStyle(color: Colors.black),
               ),
             ),
 
@@ -181,8 +217,12 @@ class _AddProductScreenState extends State<CreateNewProduct> {
               controller: productDescriptionController,
               maxLines: 4,
               decoration: InputDecoration(
-                labelText: isFilipino ? "Deskripsyon ng produkto" : "Product description",
+                labelText:
+                    isFilipino
+                        ? "Deskripsyon ng produkto"
+                        : "Product description",
                 border: OutlineInputBorder(),
+                labelStyle: TextStyle(color: Colors.black),
               ),
             ),
 
@@ -195,6 +235,7 @@ class _AddProductScreenState extends State<CreateNewProduct> {
               decoration: InputDecoration(
                 labelText: isFilipino ? "Presyo" : "Price",
                 border: OutlineInputBorder(),
+                labelStyle: TextStyle(color: Colors.black),
               ),
             ),
 
@@ -209,8 +250,9 @@ class _AddProductScreenState extends State<CreateNewProduct> {
                       Navigator.pop(context); // Cancel and go back
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: backgroundModel.secondBtn,
-                      foregroundColor: Colors.white,
+                      backgroundColor:
+                          Colors.grey[300], // Lighter cancel button
+                      foregroundColor: Colors.black,
                     ),
                     child: Text(isFilipino ? "Kanselahin" : "Cancel"),
                   ),
@@ -226,9 +268,12 @@ class _AddProductScreenState extends State<CreateNewProduct> {
                           selectedCategory == null) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                              content: Text(isFilipino
+                            content: Text(
+                              isFilipino
                                   ? "Pakitapos ang lahat ng fields."
-                                  : "Please complete all fields.")),
+                                  : "Please complete all fields.",
+                            ),
+                          ),
                         );
                         return;
                       }
@@ -257,9 +302,12 @@ class _AddProductScreenState extends State<CreateNewProduct> {
                         // Show success message
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                              content: Text(isFilipino
+                            content: Text(
+                              isFilipino
                                   ? "Matagumpay na naidagdag ang produkto!"
-                                  : "Product added successfully!")),
+                                  : "Product added successfully!",
+                            ),
+                          ),
                         );
 
                         Navigator.pop(context); // Go back after adding
@@ -267,14 +315,22 @@ class _AddProductScreenState extends State<CreateNewProduct> {
                         // Handle failure
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                              content: Text(isFilipino
+                            content: Text(
+                              isFilipino
                                   ? "Nangyaring magkamali, pakisubukang muli."
-                                  : "An error occurred, please try again.")),
+                                  : "An error occurred, please try again.",
+                            ),
+                          ),
                         );
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFFC0D7FF), // Updated color
+                      backgroundColor: const Color.fromARGB(
+                        255,
+                        29,
+                        245,
+                        216,
+                      ), // Light color for the add button
                       foregroundColor: Colors.white,
                     ),
                     child: Text(isFilipino ? "Idagdag" : "Add"),

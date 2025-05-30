@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart'; // For state management
 import '/models/background_model.dart'; // Custom background color model
-import '/models/language_model.dart';   // Custom language toggle model
+import '/models/language_model.dart'; // Custom language toggle model
 import 'log_in.dart';
 import 'user_preference.dart';
 import 'home_screen.dart';
@@ -37,6 +37,7 @@ class MyApp extends StatelessWidget {
           '/home': (context) => HomeScreen(),
           '/preferences': (context) => UserPreferencePage(),
           '/detail': (context) => DetailScreen(),
+          '/product-details': (context) => DetailScreen(),
         },
       ),
     );

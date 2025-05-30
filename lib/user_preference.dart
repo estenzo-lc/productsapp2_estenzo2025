@@ -12,7 +12,7 @@ class UserPreferencePage extends StatefulWidget {
 
 class _UserPreferencePageState extends State<UserPreferencePage> {
   Color? selectedThemeColor; // Currently selected theme color
-  String? selectedLanguage;  // Currently selected language
+  String? selectedLanguage; // Currently selected language
 
   @override
   Widget build(BuildContext context) {
@@ -23,12 +23,16 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
 
     // Translations for text based on selected language
     final titleText = isFilipino ? "Mga Kagustuhan" : "User Preferences";
-    final selectThemeText = isFilipino ? "Piliin ang Tema" : "Select Theme Color";
-    final selectLanguageText = isFilipino ? "Piliin ang Wika" : "Select Language";
-    final saveChangesText = isFilipino ? "I-save ang mga pagbabago" : "Save Changes";
-    final missingSelectionText = isFilipino
-        ? "Pumili ng parehas na tema at wika."
-        : "Please select both theme and language.";
+    final selectThemeText =
+        isFilipino ? "Piliin ang Tema" : "Select Theme Color";
+    final selectLanguageText =
+        isFilipino ? "Piliin ang Wika" : "Select Language";
+    final saveChangesText =
+        isFilipino ? "I-save ang mga pagbabago" : "Save Changes";
+    final missingSelectionText =
+        isFilipino
+            ? "Pumili ng parehas na tema at wika."
+            : "Please select both theme and language.";
 
     return Scaffold(
       appBar: AppBar(
@@ -52,9 +56,6 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
                 const SizedBox(width: 20),
                 _buildThemeButton(const Color(0xFFC0D7FF), "Color 2"),
                 const SizedBox(width: 20),
-                _buildThemeButton(const Color(0xFFBEC1FF), "Color 3"),
-                const SizedBox(width: 20),
-                _buildThemeButton(const Color(0xFFC8B3FF), "Color 4"),
               ],
             ),
 
@@ -79,7 +80,10 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
             // Save changes button
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 30,
+                  vertical: 12,
+                ),
                 backgroundColor: backgroundModel.buyBtn,
               ),
               onPressed: () {
@@ -92,20 +96,24 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
 
                   // Show confirmation SnackBar after state updates
                   Future.delayed(Duration.zero, () {
-                    final updatedLang = Provider.of<LanguageModel>(context, listen: false);
-                    final confirmationText = updatedLang.isFilipino()
-                        ? "Mga pagbabago ay na-save!"
-                        : "Changes saved!";
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(confirmationText)),
+                    final updatedLang = Provider.of<LanguageModel>(
+                      context,
+                      listen: false,
                     );
+                    final confirmationText =
+                        updatedLang.isFilipino()
+                            ? "Mga pagbabago ay na-save!"
+                            : "Changes saved!";
+
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(confirmationText)));
                   });
                 } else {
                   // Show error if selections are missing
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(missingSelectionText)),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(missingSelectionText)));
                 }
               },
               child: Text(saveChangesText),
@@ -126,9 +134,10 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
-        side: selectedThemeColor == color
-            ? const BorderSide(color: Colors.black, width: 2)
-            : BorderSide.none,
+        side:
+            selectedThemeColor == color
+                ? const BorderSide(color: Colors.black, width: 2)
+                : BorderSide.none,
       ),
       child: Text(label),
     );
@@ -143,9 +152,10 @@ class _UserPreferencePageState extends State<UserPreferencePage> {
         });
       },
       style: ElevatedButton.styleFrom(
-        side: selectedLanguage == lang
-            ? const BorderSide(color: Colors.black, width: 2)
-            : BorderSide.none,
+        side:
+            selectedLanguage == lang
+                ? const BorderSide(color: Colors.black, width: 2)
+                : BorderSide.none,
       ),
       child: Text(lang),
     );
